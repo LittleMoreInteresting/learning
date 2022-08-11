@@ -5,23 +5,25 @@ import (
 	"fmt"
 )
 
-type Member struct {
-	Id int `json:"id"`
-	Name string `json:"name"`
+type DoubleSlices struct {
+	Str     []string `json:"str"`
+	Numbers []int    `json:"numbers"`
 }
+
 func main() {
-	member := &Member{
-		1,"Tommy",
+	ds := &DoubleSlices{
+		[]string{"a", "b", "c", "d"},
+		[]int{1, 2, 3, 4},
 	}
-	marshal, err := json.Marshal(member)
-	if err!=nil {
+	marshal, err := json.Marshal(ds)
+	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("JSON:%s",marshal)
-	mem2 := Member{}
+	fmt.Printf("JSON:%s", marshal)
+	mem2 := DoubleSlices{}
 	err = json.Unmarshal(marshal, &mem2)
-	if err!=nil {
+	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("MEM:%v",mem2)
+	fmt.Printf("MEM:%v", mem2)
 }
