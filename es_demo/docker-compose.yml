@@ -1,0 +1,47 @@
+version: "3"
+services:
+  es1:
+    image: elasticsearch:7.17.1
+    container_name: es1
+    environment:
+      - "ES_JAVA_OPTS=-Xms25m -Xmx512m"
+    ports:
+      - "9201:9201"
+      - "9301:9301"
+    volumes:
+      - /opt/elasticsearch/node-1/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /opt/elasticsearch/node-1/data:/usr/share/elasticsearch/data
+    networks: 
+      - es_net
+      
+  es2:
+    image: elasticsearch:7.17.1
+    container_name: es2
+    environment:
+      - "ES_JAVA_OPTS=-Xms25m -Xmx512m"
+    ports:
+      - "9202:9202"
+      - "9302:9302"
+    volumes:
+      - /opt/elasticsearch/node-2/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /opt/elasticsearch/node-2/data:/usr/share/elasticsearch/data
+    networks: 
+      - es_net
+      
+  es3:
+    image: elasticsearch:7.17.1
+    container_name: es3
+    environment:
+      - "ES_JAVA_OPTS=-Xms25m -Xmx512m"
+    ports:
+      - "9203:9203"
+      - "9303:9303"
+    volumes:
+      - /opt/elasticsearch/node-3/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /opt/elasticsearch/node-3/data:/usr/share/elasticsearch/data
+    networks: 
+      - es_net
+
+networks:
+  es_net:   
+ 

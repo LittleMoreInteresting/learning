@@ -1,0 +1,25 @@
+# 集群的名称(各节点*集群名称*需要保持一致)
+cluster.name: "docker-cluster"
+#节点的名称
+node.name: node-1
+#此节点是否可以用作master节点
+node.master: true
+#此节点是否是存储节点
+node.data: true
+#此节点是否是预处理节点 如果是master节点的话 建议这里是true
+node.ingest: true
+#设置主机IP 0.0.0.0时外网可以访问到
+network.host: 0.0.0.0
+network.publish_host: 127.0.0.1
+# 配置端口
+http.port: 9201
+# 集群通信端口
+transport.port: 9301
+#集群内节点信息 每个节点会共享自己的此参数
+discovery.seed_hosts: ["es1:9301","es2:9302","es3:9303"]
+#集群的master候选节点目录。只有在初始化的时候才生效。
+#这里只写node-1 并且配置这个参数 是用于快速搭建集群。集群已启动自动node-1   是master
+cluster.initial_master_nodes: ["node-1"]
+#cross 跨域访问 配置这个之后 head就可以用了
+http.cors.enabled:  true
+http.cors.allow-origin:  "*"
