@@ -3,6 +3,7 @@ module learning
 go 1.15
 
 require (
+	github.com/Shopify/sarama v1.30.0
 	github.com/coreos/etcd v2.3.8+incompatible
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
