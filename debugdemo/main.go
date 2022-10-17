@@ -1,63 +1,78 @@
 package main
 
 import (
-	"log"
-	"runtime"
-	"time"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
-	_ "net/http/pprof"
+	"sync"
 )
 
-func readMemStats() {
+const (
+	huoziyinyue = "http://127.0.0.1:15563/api"
+	quduoduo    = "http://127.0.0.1:15563/api"
+	vfine       = "http://127.0.0.1:15563/api"
+	audio100    = "http://127.0.0.1:15563/api"
+)
 
-	var ms runtime.MemStats
-
-	runtime.ReadMemStats(&ms)
-
-	log.Printf(" ===> Alloc:%d(bytes) HeapIdle:%d(bytes) HeapReleased:%d(bytes)", ms.Alloc, ms.HeapIdle, ms.HeapReleased)
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	body, _ := ioutil.ReadAll(r.Body)
+	str := muxCurl(string(body))
+	data, _ := json.Marshal(str)
+	w.Write(data)
+	return
 }
 
-func test() {
-	//slice 会动态扩容，用slice来做堆内存申请
-	container := make([]int, 8)
+type Data struct {
+	Hash_list []int64 `json:"hash_list"`
+	Time_list []int64 `json:"time_list"`
+}
 
-	log.Println(" ===> loop begin.")
-	for i := 0; i < 32*1000*1000; i++ {
-		container = append(container, i)
-		if ( i == 16*1000*1000) {
-			readMemStats()
-		}
+func Request(data string, url string) string {
+	jsonStr := []byte(data)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
 	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(body)
+	return string(body)
+}
+func muxCurl(data string) []map[string]interface{} {
+	tasks := []func() string{
+		func() string { return Request(data, quduoduo) },
+		func() string { return Request(data, huoziyinyue) },
+		func() string { return Request(data, vfine) },
+		func() string { return Request(data, audio100) },
+	}
+	var wg sync.WaitGroup
 
-	log.Println(" ===> loop end.")
+	var jsdata []map[string]interface{}
+	for _, task := range tasks {
+		task := task
+		wg.Add(1)
+		go func() {
+			datafe := task()
+			var m map[string]interface{}
+			var data Data
+			json.Unmarshal([]byte(datafe), &data)
+			js, _ := json.Marshal(data)
+			json.Unmarshal(js, &m)
+			m["hash_list"] = data.Hash_list
+			m["time_list"] = data.Time_list
+			jsdata = append(jsdata, m)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	return jsdata
 }
 
 func main() {
-
-
-	//启动pprof
-	go func() {
-		log.Println(http.ListenAndServe("0.0.0.0:10000", nil))
-	}()
-
-	log.Println(" ===> [Start].")
-
-	readMemStats()
-	test()
-	readMemStats()
-
-	log.Println(" ===> [force gc].")
-	runtime.GC() //强制调用gc回收
-
-	log.Println(" ===> [Done].")
-	readMemStats()
-
-	go func() {
-		for {
-			readMemStats()
-			time.Sleep(10 * time.Second)
-		}
-	}()
-
-	time.Sleep(3600 * time.Second) //睡眠，保持程序不退出
+	http.HandleFunc("/", IndexHandler)
+	_ = http.ListenAndServe("127.0.0.1:1234", nil)
 }

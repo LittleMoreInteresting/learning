@@ -5,25 +5,20 @@ import (
 	"fmt"
 )
 
-type DoubleSlices struct {
-	Str     []string `json:"str"`
-	Numbers []int    `json:"numbers"`
+type Data struct {
+	HashList []int               `json:"hash_list"`
+	TimeList []int               `json:"time_list"`
+	Mp       []map[string]string `json:"mp"`
 }
 
 func main() {
-	ds := &DoubleSlices{
-		[]string{"a", "b", "c", "d"},
-		[]int{1, 2, 3, 4},
-	}
-	marshal, err := json.Marshal(ds)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("JSON:%s", marshal)
-	mem2 := DoubleSlices{}
-	err = json.Unmarshal(marshal, &mem2)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("MEM:%v", mem2)
+	str1 := "{\"hash_list\":[12,12,12,12,12]}"
+	str2 := "{\"time_list\":[34,34,34,34,34]}"
+	var data Data
+	_ = json.Unmarshal([]byte(str1), &data)
+	_ = json.Unmarshal([]byte(str2), &data)
+	fmt.Printf("H:%v\n", data.HashList)
+	fmt.Printf("T:%v\n", data.TimeList)
+	json_res, _ := json.Marshal(data)
+	fmt.Printf("Json:%v\n", string(json_res))
 }
