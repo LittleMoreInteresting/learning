@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/Shopify/sarama v1.30.0
+	github.com/apache/rocketmq-client-go/v2 v2.1.1 // indirect
 	github.com/coreos/etcd v2.3.8+incompatible
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
