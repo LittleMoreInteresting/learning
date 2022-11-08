@@ -12,7 +12,15 @@ func main() {
 		}
 		close(ch)
 	}()
-	for num := range ch {
+	/*for num := range ch {
+		fmt.Println(num)
+	}*/
+	for {
+		num, ok := <-ch
+		if !ok {
+			fmt.Println("channel closed")
+			return
+		}
 		fmt.Println(num)
 	}
 }
