@@ -3,11 +3,12 @@ module learning
 go 1.15
 
 require (
+	fyne.io/fyne/v2 v2.3.0
 	github.com/Shopify/sarama v1.30.0
-	github.com/apache/rocketmq-client-go/v2 v2.1.1 // indirect
+	github.com/apache/rocketmq-client-go/v2 v2.1.1
 	github.com/coreos/etcd v2.3.8+incompatible
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/wire v0.5.0
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
