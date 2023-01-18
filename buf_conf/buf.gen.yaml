@@ -1,0 +1,7 @@
+# 配置protoc生成规则
+version: v1
+plugins:
+  # Use protoc-gen-go at v1.28.1
+  - plugin: buf.build/protocolbuffers/go:v1.28.1
+    out: api:../
+    opt: paths=source_relative

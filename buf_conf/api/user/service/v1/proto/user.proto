@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package api.user.service.v1.proto;
+
+option go_package = "mini-sys/api/user/service/v1/proto;proto";
+option java_multiple_files = true;
+option java_package = "api.user.service.v1.proto";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/empty.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+	info: {
+		title: "用户管理";
+		description: "用户管理";
+		version: "1.0.0";
+	}
+};
+
+// 变量的命名一律使用小驼峰命名法，例如：firstName、lastName等。
+
+// 用户服务
+service UserService {
+	option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {
+		description: "UserService -- 用户服务"
+		external_docs: {
+			url: "https://github.com/grpc-ecosystem/grpc-gateway";
+			description: "Find out more about EchoService";
+		}
+	};
+	// 登陆
+	rpc Login (LoginRequest) returns (LoginResponse) {}
+
+	// 登出
+	rpc Logout (LogoutRequest) returns (google.protobuf.Empty) {}
+
+	// 注册
+	rpc Register (RegisterRequest) returns (RegisterResponse) {}
+
+	// 获取已经登陆的用户的数据
+	rpc Mine (MineRequest) returns (MineResponse) {}
+
+	// 验证用户名是否可用
+	rpc CheckUsername (CheckUsernameReq) returns (CheckUsernameReply){}
+}
+
+// 用户
+message User {
+	uint32 id = 1;
+	optional string username = 2;
+	optional string nikename = 3;
+	optional string email = 4;
+	optional string avatar = 5;
+	optional string description = 6;
+	optional string password = 7;
+	optional string createAt = 8;
+	optional string updateAt = 9;
+	optional string status = 10 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "用户状态"
+		default: "ON"
+		enum: ["ON", "OFF"]
+	}];
+}
+
+// 登录 -入参
+message LoginRequest {
+	optional string username = 1;
+	optional string password = 2;
+}
+// 登录 - 返回
+message LoginResponse {
+	uint32 id = 1;
+	string username = 2;
+	string token = 3;
+	string refreshToken = 4;
+}
+
+// 退出登录
+message LogoutRequest {
+	uint32 id = 1;
+}
+
+//注册 - 请求
+message RegisterRequest {
+	User user = 1;
+}
+
+// 注册- 返回
+message RegisterResponse {
+	uint32 id = 1;
+	string username = 2;
+	string token = 3;
+}
+
+//更新 - 请求
+message UpdateUserRequest {
+	uint32 id = 1;
+	User user = 2;
+	uint32 operatorId = 3;
+}
+
+//删除
+message DeleteUserRequest {
+	uint32 id = 1;
+	uint32 operatorId = 2;
+}
+
+//个人信息-请求
+message MineRequest {
+	uint32 id = 1;
+}
+//个人信息-返回
+message MineResponse {
+	uint32 id = 1;
+	optional string username = 2;
+	optional string email = 3;
+	optional string avatar = 4;
+	optional string description = 5;
+	optional string nikename = 6;
+}
+
+message CheckUsernameReq {
+	string username = 1;
+}
+message CheckUsernameReply {
+	bool ok = 1;
+}
