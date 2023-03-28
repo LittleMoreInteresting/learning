@@ -3,140 +3,96 @@ package main
 import (
 	"bytes"
 	"crypto/aes"
+	"crypto/cipher"
 	"encoding/base64"
-	"encoding/hex"
-	"errors"
-	"log"
+	"fmt"
 )
 
 func main() {
-	/*
-	 * src 要加密的字符串
-	 * key 用来加密的密钥 密钥长度可以是128bit、192bit、256bit中的任意一个
-	 * 16位key对应128bit
-	 */
+	key := []byte("y27bulYuw6cmm@ln")
+	plaintext := []byte("13081450221")
 
-	src := `13164238899`
-
-	ae := &AesECB{
-		key:       []byte("y27bulYuw6cmm@ln"),
-		blockSize: aes.BlockSize,
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err)
 	}
 
-	// 普通文本的加密与解密
-	// ECB加密
-	encrypted1, _ := ae.Encrypt([]byte(src))
-	log.Println(
-		hex.EncodeToString(encrypted1),                //输出16进制串
-		base64.StdEncoding.EncodeToString(encrypted1), //输出16进制串
-	)
+	paddedPlaintext := pkcs5Padding(plaintext, aes.BlockSize)
+	ciphertext := make([]byte, len(paddedPlaintext))
 
-	// ECB解密
-	decrypted1, _ := ae.Decrypt(encrypted1)
-	log.Println(
-		string(decrypted1),
-	)
+	ecb := NewECBEncrypter(block)
+	ecb.CryptBlocks(ciphertext, paddedPlaintext)
 
-	/*	src = "aa10"
-		// 16进制的加密与解密
-		hb, _ := hex.DecodeString(src)
-		encrypted2, _ := ae.Encrypt(hb)
-		log.Println(
-			hex.EncodeToString(encrypted2),
-		)
-
-		// ECB解密
-		decrypted2, _ := ae.Decrypt(encrypted2)
-		log.Println(
-			hex.EncodeToString(decrypted2),
-		)*/
+	fmt.Printf("%v\n", base64.StdEncoding.EncodeToString(ciphertext))
+	fmt.Printf("%v\n", ciphertext)
+	s, _ := base64.StdEncoding.DecodeString("nviBhS4T0yuNSP8cqtTjWw==")
+	fmt.Printf("%v\n", s)
+	ecb = NewECBDecrypter(block)
+	ecb.CryptBlocks(ciphertext, s)
+	padding := ciphertext[len(ciphertext)-1]
+	fmt.Printf("%v\n", padding)
+	fmt.Printf("%v\n", ciphertext[:len(ciphertext)-int(padding)])
+	fmt.Printf("%v\n", string(ciphertext[:len(ciphertext)-int(padding)]))
 }
 
-type AesECB struct {
-	key       []byte
+func pkcs5Padding(data []byte, blockSize int) []byte {
+	padding := blockSize - len(data)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(data, padtext...)
+}
+
+type ecb struct {
+	b         cipher.Block
 	blockSize int
 }
 
-func (a *AesECB) Encrypt(src []byte, isPad ...bool) ([]byte, error) {
-	block, err := aes.NewCipher(a.key)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(src) == 0 {
-		return nil, errors.New("content is empty")
-	}
-
-	if len(isPad) > 0 && isPad[0] == false {
-		src = a.noPadding(src)
-	} else {
-		src = a.padding(src)
-	}
-
-	buf := make([]byte, a.blockSize)
-	encrypted := make([]byte, 0)
-	for i := 0; i < len(src); i += a.blockSize {
-		block.Encrypt(buf, src[i:i+a.blockSize])
-		encrypted = append(encrypted, buf...)
-	}
-	return encrypted, nil
-}
-
-func (a *AesECB) Decrypt(src []byte, isPad ...bool) ([]byte, error) {
-	block, err := aes.NewCipher(a.key)
-	if err != nil {
-		return nil, err
-	}
-	if len(src) == 0 {
-		return nil, errors.New("content is empty")
-	}
-	buf := make([]byte, a.blockSize)
-	decrypted := make([]byte, 0)
-	for i := 0; i < len(src); i += a.blockSize {
-		block.Decrypt(buf, src[i:i+a.blockSize])
-		decrypted = append(decrypted, buf...)
-	}
-
-	if len(isPad) > 0 && isPad[0] == false {
-		decrypted = a.unNoPadding(decrypted)
-	} else {
-		decrypted = a.unPadding(decrypted)
-	}
-
-	return decrypted, nil
-}
-
-//nopadding模式
-func (a *AesECB) noPadding(src []byte) []byte {
-	count := a.blockSize - len(src)%a.blockSize
-	if len(src)%a.blockSize == 0 {
-		return src
-	} else {
-		return append(src, bytes.Repeat([]byte{byte(0)}, count)...)
+func newECB(b cipher.Block) *ecb {
+	return &ecb{
+		b:         b,
+		blockSize: b.BlockSize(),
 	}
 }
 
-//nopadding模式
-func (a *AesECB) unNoPadding(src []byte) []byte {
-	for i := len(src) - 1; ; i-- {
-		if src[i] != 0 {
-			return src[:i+1]
-		}
+type ecbEncrypter ecb
+
+// NewECBEncrypter returns a BlockMode which encrypts in electronic code book
+// mode, using the given Block.
+func NewECBEncrypter(b cipher.Block) cipher.BlockMode {
+	return (*ecbEncrypter)(newECB(b))
+}
+func (x *ecbEncrypter) BlockSize() int { return x.blockSize }
+func (x *ecbEncrypter) CryptBlocks(dst, src []byte) {
+	if len(src)%x.blockSize != 0 {
+		panic("crypto/cipher: input not full blocks")
 	}
-	return nil
+	if len(dst) < len(src) {
+		panic("crypto/cipher: output smaller than input")
+	}
+	for len(src) > 0 {
+		x.b.Encrypt(dst, src[:x.blockSize])
+		src = src[x.blockSize:]
+		dst = dst[x.blockSize:]
+	}
 }
 
-//padding模式
-func (a *AesECB) padding(src []byte) []byte {
-	count := a.blockSize - len(src)%a.blockSize
-	padding := bytes.Repeat([]byte{byte(0)}, count)
-	padding[count-1] = byte(count)
-	return append(src, padding...)
-}
+type ecbDecrypter ecb
 
-//padding模式
-func (a *AesECB) unPadding(src []byte) []byte {
-	l := len(src)
-	p := int(src[l-1])
-	return src[:l-p]
+// NewECBDecrypter returns a BlockMode which decrypts in electronic code book
+// mode, using the given Block.
+func NewECBDecrypter(b cipher.Block) cipher.BlockMode {
+	return (*ecbDecrypter)(newECB(b))
+}
+func (x *ecbDecrypter) BlockSize() int { return x.blockSize }
+func (x *ecbDecrypter) CryptBlocks(dst, src []byte) {
+	if len(src)%x.blockSize != 0 {
+		panic("crypto/cipher: input not full blocks")
+	}
+	if len(dst) < len(src) {
+		panic("crypto/cipher: output smaller than input")
+	}
+	for len(src) > 0 {
+		x.b.Decrypt(dst, src[:x.blockSize])
+		src = src[x.blockSize:]
+		dst = dst[x.blockSize:]
+	}
 }
