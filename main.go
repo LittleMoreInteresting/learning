@@ -1,7 +1,14 @@
 package main
 
-func main() {
+import (
+	"fmt"
+	"time"
+)
 
+func main() {
+	now := time.Now().Unix() / 100 * 100
+	fmt.Println(now)
+	fmt.Println(time.Unix(now, 0).Format("2006-01-02 15:04:05"))
 }
 
 func strLen(str []byte) int {

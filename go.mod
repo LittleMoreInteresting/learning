@@ -25,6 +25,8 @@ require (
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/viper v1.9.0
 	github.com/tebeka/strftime v0.1.5 // indirect
+	github.com/xuri/efp v0.0.0-20230418022843-d151280498a4 // indirect
+	github.com/xuri/excelize/v2 v2.7.1 // indirect
 	github.com/zeromicro/go-zero v1.4.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/sync v0.1.0
