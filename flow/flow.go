@@ -25,7 +25,7 @@ func main() {
 			ApproveUser:   "shr",
 			ApproveTime:   time.Now().Unix(),
 		})
-		newNodes, isEnd := move.GetNextNodes(node.Node.Id)
+		newNodes, isEnd := move.GetNextNodes(node.Id)
 		nodes = append(nodes, newNodes...)
 		fmt.Println(isEnd)
 	}

@@ -18,7 +18,7 @@ type NodeRole struct {
 	ApproveOption string `json:"approve_option"`
 }
 type Node struct {
-	Id            int       `json:"id"`
+	Id            int64     `json:"id"`
 	Type          int       `json:"type"`
 	Node          *NodeRole `json:"node"`
 	Child         []*Node   `json:"child"`
@@ -48,8 +48,8 @@ func NewNodeMoveWithString(nodeData string) (*NodeMove, error) {
 }
 
 // 获取下一批审批节点 , 是否审批完成
-func (move *NodeMove) GetNextNodes(role_id int64) ([]*Node, bool) {
-	if role_id == 0 {
+func (move *NodeMove) GetNextNodes(node_id int64) ([]*Node, bool) {
+	if node_id == 0 {
 		node := move.flowNodes[0]
 		if node.Type == 1 {
 			return []*Node{node}, false
@@ -69,7 +69,7 @@ func (move *NodeMove) GetNextNodes(role_id int64) ([]*Node, bool) {
 			return nextNewNode, false
 		}
 	}
-	node := move.SearchNodeByRoleId(role_id)
+	node := move.SearchNodeByRoleId(node_id)
 
 	// 有串联下级
 	if len(node.Child) > 0 {
@@ -117,14 +117,14 @@ func (move *NodeMove) GetNextNodes(role_id int64) ([]*Node, bool) {
 	return []*Node{}, true
 }
 
-func (move *NodeMove) SearchNodeByRoleId(role_id int64) *Node {
+func (move *NodeMove) SearchNodeByRoleId(node_id int64) *Node {
 	var found *Node
 	list := move.flowNodes
 	for len(list) > 0 {
 		node := list[0]
 		list = list[1:]
 		if node.Type == 1 {
-			if node.Node.Id == role_id {
+			if node.Id == node_id {
 				found = node
 				return found
 			}
