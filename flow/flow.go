@@ -27,7 +27,9 @@ func main() {
 		})
 		var newNodes []*Node
 		newNodes, is_end = move.GetNextNodes(node.Id)
+
 		nodes = append(nodes, newNodes...)
+
 	}
 	fmt.Println(move.ToString())
 	fmt.Println(is_end)

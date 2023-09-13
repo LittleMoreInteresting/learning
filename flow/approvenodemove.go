@@ -33,7 +33,7 @@ type NodeMove struct {
 }
 
 func NewNodeMove(flowNodes []*Node) *NodeMove {
-	buildTree(flowNodes, nil)
+	buildTree(flowNodes, nil, false)
 	return &NodeMove{
 		flowNodes: flowNodes,
 	}
@@ -41,7 +41,7 @@ func NewNodeMove(flowNodes []*Node) *NodeMove {
 func NewNodeMoveWithString(nodeData string) (*NodeMove, error) {
 	var flowNodes []*Node
 	err := json.Unmarshal([]byte(nodeData), &flowNodes)
-	buildTree(flowNodes, nil)
+	buildTree(flowNodes, nil, false)
 	return &NodeMove{
 		flowNodes: flowNodes,
 	}, err
@@ -51,23 +51,8 @@ func NewNodeMoveWithString(nodeData string) (*NodeMove, error) {
 func (move *NodeMove) GetNextNodes(node_id int64) ([]*Node, bool) {
 	if node_id == 0 {
 		node := move.flowNodes[0]
-		if node.Type == 1 {
-			return []*Node{node}, false
-		} else if node.Type == 2 {
-			//return node.PartNode, false
-			nextNewNode := []*Node{}
-			list := node.PartNode
-			for len(list) > 0 {
-				nextNode := list[0]
-				list = list[1:]
-				if nextNode.Type == 1 {
-					nextNewNode = append(nextNewNode, nextNode)
-				} else if nextNode.Type == 2 {
-					list = append(list, nextNode.PartNode...)
-				}
-			}
-			return nextNewNode, false
-		}
+		nextNewNode := findNodeNext(node)
+		return nextNewNode, false
 	}
 
 	node := move.SearchNodeByRoleId(node_id)
@@ -86,7 +71,11 @@ func (move *NodeMove) GetNextNodes(node_id int64) ([]*Node, bool) {
 		}
 		return nextNewNode, false
 	}
-
+	if node.Next != nil {
+		node = node.Next
+		nextNewNode := findNodeNext(node)
+		return nextNewNode, false
+	}
 	// 并联子集
 	for node.Pre != nil {
 		if node.Pre.ApproveStatus == 1 {
@@ -99,11 +88,7 @@ func (move *NodeMove) GetNextNodes(node_id int64) ([]*Node, bool) {
 			return []*Node{}, false
 		}
 	}
-	if node.Next != nil {
-		node = node.Next
-		nextNewNode := findNodeNext(node)
-		return nextNewNode, false
-	}
+
 	return []*Node{}, true
 }
 
@@ -221,7 +206,7 @@ func (move *NodeMove) GetRejectNode() *Node {
 	return found
 }
 
-func buildTree(process []*Node, pre *Node) {
+func buildTree(process []*Node, pre *Node, part bool) {
 	if len(process) == 0 {
 		return
 	}
@@ -229,14 +214,14 @@ func buildTree(process []*Node, pre *Node) {
 	for i, _ := range process {
 		node := process[i]
 		if node.Type == 1 {
-			buildTree(node.Child, pre)
+			buildTree(node.Child, pre, false)
 		} else if node.Type == 2 {
-			buildTree(node.PartNode, node)
+			buildTree(node.PartNode, node, true)
 		}
 		if pre != nil {
 			node.Pre = pre
 		}
-		if current != nil {
+		if !part && current != nil {
 			current.Next = node
 		}
 		current = node
