@@ -13,7 +13,10 @@ import (
 )
 
 func downloadFile(ctx http.Context) error {
-
+	disposition := fmt.Sprintf("attachment; filename=%s", "files.zip")
+	ctx.Response().Header().Set("Content-Type", "application/zip")
+	ctx.Response().Header().Set("Content-Disposition", disposition)
+	ctx.Response().Header().Set("Access-Control-Expose-Headers", "Content-Disposition")
 	zipWriter := zip.NewWriter(ctx.Response())
 	defer zipWriter.Close()
 	zipEntry, errZip := zipWriter.Create("08.png")
@@ -42,11 +45,6 @@ func downloadFile(ctx http.Context) error {
 	if err != nil {
 		return err
 	}
-	disposition := fmt.Sprintf("attachment; filename=%s", "files.zip")
-	ctx.Response().Header().Set("Content-Type", "application/zip")
-	ctx.Response().Header().Set("Content-Disposition", disposition)
-	ctx.Response().Header().Set("Access-Control-Expose-Headers", "Content-Disposition")
-
 	return nil
 }
 
