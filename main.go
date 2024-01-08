@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"strings"
 )
 
 func main() {
-	now := time.Now().Unix() / 100 * 100
-	fmt.Println(now)
-	fmt.Println(time.Unix(now, 0).Format("2006-01-02 15:04:05"))
+	split := strings.Split("abc(kdkkd)", "(")
+	fmt.Println(split[0])
 }
 
 func strLen(str []byte) int {

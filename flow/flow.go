@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"time"
+	"os"
 )
 
 func main() {
@@ -13,8 +12,9 @@ func main() {
 
 	var is_end bool
 	var nodes = []*Node{}
-	nodes, is_end = move.GetNextNodes(0)
-	for len(nodes) > 0 {
+	nodes, is_end = move.GetNextNodes(8)
+	fmt.Println(nodes[0])
+	/*for len(nodes) > 0 {
 		node := nodes[0]
 		fmt.Println(node.Id, node.Node.Id, node.Node.Name)
 		nodes = nodes[1:]
@@ -30,13 +30,13 @@ func main() {
 
 		nodes = append(nodes, newNodes...)
 
-	}
-	fmt.Println(move.ToString())
+	}*/
+	//fmt.Println(move.ToString())
 	fmt.Println(is_end)
 }
 
 func loadJson() []byte {
-	file, err := ioutil.ReadFile("D:\\code\\learning\\flow\\data.json")
+	file, err := os.ReadFile("D:\\code\\learning\\flow\\data.json")
 	if err != nil {
 		panic(err)
 	}
